@@ -27,7 +27,7 @@ const schema = z.object({
 	company_name: z.string().min(1),
 	description: z.string().min(1),
 	// accept both string and number, but transform to string
-	projects_per_year: z.union([z.string().min(1), z.number().min(1)]).transform((value) => String(value)),
+	// projects_per_year: z.union([z.string().min(1), z.number().min(1)]).transform((value) => String(value)),
 	nip: z
 		.string()
 		.length(10, { message: 'NIP musi mieć dokładnie 10 cyfr' })
@@ -60,7 +60,7 @@ const init: SchemaT = {
 	nip: '',
 	website: '',
 	description: '',
-	projects_per_year: '',
+	// projects_per_year: '',
 	project_stage: '',
 	notifications: {
 		email: false,
@@ -70,7 +70,7 @@ const init: SchemaT = {
 	users: [{ email: '' }],
 };
 
-export default function FormExampleWithCustomComponents() {
+export default function FormRawWithComments() {
 	const form = useForm({
 		defaultValues: init,
 		// resolver is validating data = without it we could submit anything we want !
@@ -86,18 +86,48 @@ export default function FormExampleWithCustomComponents() {
 		control: form.control,
 	});
 
-	function onSubmit() {
-		form.reset();
+	function onSubmit(data: SchemaT) {
+		console.log({ data }, 'data');
+		console.log(`🚀: `, form.formState);
+		// form.reset();
 	}
+
+	console.log(form.formState.errors);
 
 	return (
 		<>
 			{/* It is ok to use normal form element with fields  */}
-			<form action=''>
-				{/* Field Group is adding space between fields*/}
+			<form onSubmit={form.handleSubmit(onSubmit)} action='' className={`w-full`}>
+				{/*💥 INPUT */}
 				<FieldGroup>
+					{/*<Controller*/}
+					<Controller
+						// we start by adding control - after that we are getting type safety
+						control={form.control}
+						name={`company_name`}
+						// render function  gives us state of the field
+						render={({ field, fieldState }) => {
+							return (
+								// if data is invalid it will change the color to red
+								<Field data-invalid={fieldState.invalid}>
+									{/*Field content makes children insight a bit tighter*/}
+									<FieldContent>
+										<FieldDescription>Opis pola </FieldDescription>
+										{/* If we connect htmlFor and id, clicking on the label
+										 will highlight the input for us*/}
+										<FieldLabel htmlFor={field.name}>company_name</FieldLabel>
+									</FieldContent>
+									{/* aria-invalid gives us styling of the whole field
+									 like red highlight if field is invalid */}
+									<Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
+									{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+								</Field>
+							);
+						}}
+					/>
+
 					{/*  Field set is allowing to create a subset of different elements inside one thing
-             return */}
+					 return */}
 					<FieldSet>
 						<FieldContent>
 							<FieldLegend>Notifications</FieldLegend>
@@ -190,7 +220,7 @@ export default function FormExampleWithCustomComponents() {
 										<FieldDescription>Opis pola </FieldDescription>
 										{/* If we connect htmlFor and id, clicking on the label
                        will highlight the input for us*/}
-										<FieldLabel htmlFor={field.name}>nip</FieldLabel>
+										<FieldLabel htmlFor={field.name}>input</FieldLabel>
 									</FieldContent>
 									{/* aria-invalid gives us styling of the whole field
                      like red highlight if field is invalid */}
@@ -302,12 +332,12 @@ export default function FormExampleWithCustomComponents() {
 							</Button>
 						</div>
 					</FieldSet>
-					<Button>submit</Button>
 
 					<FieldGroup>
 						{users.map((user, index) => {
 							return (
 								<Controller
+									key={index}
 									control={form.control}
 									name={`users.${index}.email`}
 									render={({ field, fieldState }) => {
@@ -340,6 +370,7 @@ export default function FormExampleWithCustomComponents() {
 						})}
 					</FieldGroup>
 				</FieldGroup>
+				<Button type={`submit`}>submit</Button>
 			</form>
 		</>
 	);
