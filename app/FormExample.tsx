@@ -1,15 +1,17 @@
 'use client';
 
 import { Button } from "@/components/ui/button";
-import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSeparator, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { X } from "lucide-react";
 
 const schema = z.object({
   company_name: z.string().min(1),
@@ -31,6 +33,9 @@ const schema = z.object({
     sms: z.boolean(),
     push: z.boolean(),
   }),
+  users: z.array(z.object({
+    email: z.email(),
+  })).min(1).max(5)
 });
 
 type SchemaT = z.infer<typeof schema>;
@@ -47,6 +52,7 @@ const init: SchemaT = {
     sms: false,
     push: false,
   },
+  users: [{email: ""}]
 };
 
 export default function FormExample() {
@@ -56,6 +62,11 @@ export default function FormExample() {
     resolver: zodResolver(schema),
   });
 
+  const {remove: removeUser, append: addUser, fields: users} = useFieldArray({
+    name: 'users',
+    control: form.control
+  })
+
 
   function onSubmit() {
 
@@ -64,7 +75,6 @@ export default function FormExample() {
 
   return (
     <>
-      <div className={`px-r container mx-auto my-6 mt-20`}>
         {/* It is ok to use normal form element with fields  */}
         <form action=''>
           {/* Field Group is adding space between fields*/}
@@ -131,18 +141,8 @@ export default function FormExample() {
                       );
                     }}
                   />
-
-
                 </FieldGroup>
-
-
               </FieldSet>
-
-            {/*}}*/}
-            {/*/>*/}
-
-
-
             <Controller
               // we start by adding control - after that we are getting type safety
               control={form.control}
@@ -187,7 +187,10 @@ export default function FormExample() {
             <Controller
               control={form.control}
               name={'project_stage'}
-              render={({ field: { onChange, ...field }, fieldState }) => {
+              // With selects we need to extract onBlur and onChange to pass it to correct
+              //  components, onBlur needs to go to trigger, onChange will be triggered by
+              //   onValueChange
+              render={({ field: { onChange, onBlur, ...field }, fieldState }) => {
                 return (
                   <Field data-invalid={fieldState.invalid}>
                     <FieldLabel htmlFor={field.name}>Etap Projektu</FieldLabel>
@@ -198,6 +201,7 @@ export default function FormExample() {
                         aria-invalid={fieldState.invalid}
                         className='w'
                         id={field.name}
+                        onBlur={onBlur}
                       >
                         <SelectValue placeholder='Etap projektu' />
                       </SelectTrigger>
@@ -243,13 +247,51 @@ export default function FormExample() {
                 );
               }}
             />
+
+            <FieldSeparator/>
+            <FieldSet>
+              <div className={`flex items-center `}>
+                <FieldContent>
+                  {/*variant.label will make text smaller*/}
+                  <FieldLegend className={`mb-0`} variant={'label'}>Users</FieldLegend>
+                  <FieldDescription>Add up to 5 users </FieldDescription>
+
+                  {/*this will check for any error in the parent category for example if we have
+                    too many users*/}
+                  {form.formState.errors.users && <FieldError errors={[form.formState.errors.users?.root]} />}
+                </FieldContent>
+                <Button type={`button`} onClick={() => addUser({email: ''})} >Add </Button>
+              </div>
+            </FieldSet>
             <Button>submit</Button>
 
+            <FieldGroup>
+              {users.map((user, index) => {
+                return(
+                  <Controller
+                          control={form.control}
+                          name={`users.${index}.email`}
+                          render={({field, fieldState }) => {
+                            return <Field aria-invalid={fieldState.invalid}>
+                              <InputGroup>
+                                <InputGroupInput type={'email'} aria-invalid={fieldState.invalid} {...field} id={field.name}
+                                aria-label={`User ${index + 1} email`}
+                                />
+                                  <InputGroupAddon align={`inline-end`} >
+                                    <InputGroupButton
+                                      aria-label={`Remove user ${index + 1} email`}
+                                      type={`button`} onClick={() => removeUser(index)}><X /></InputGroupButton>
+                                  </InputGroupAddon>
+                              </InputGroup>
+                              {fieldState.error && <FieldError errors={[fieldState.error]}/>}
+                            </Field>
+                          }}
+                  />)
+              })}
+            </FieldGroup>
           </FieldGroup>
 
         </form>
-      </div>
-      <div></div>
     </>
   );
 }
