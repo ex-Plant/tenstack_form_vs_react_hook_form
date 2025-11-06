@@ -1,18 +1,19 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useActionState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { Button } from "@/components/ui/button";
+import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const schema = z.object({
   company_name: z.string().min(1),
-  email: z.string().length(3, { message: 'Podaj prawdziwy email' }),
+  description: z.string().min(1),
   // accept both string and number, but transform to string
   projects_per_year: z.union([z.string().min(1), z.number().min(1)]).transform((value) => String(value)),
   nip: z
@@ -24,15 +25,10 @@ const schema = z.object({
     .string()
     .optional()
     .transform((v) => v || undefined),
-  city: z.string().min(1),
-  project_type: z.string().min(1),
-  completion_date: z.string().min(1),
   project_stage: z.string().min(1),
-  project_area: z.string().min(1),
-  project_budget: z.string().min(1),
   notifications: z.object({
-    email: z.string(),
-    sms: z.string(),
+    email: z.boolean(),
+    sms: z.boolean(),
     push: z.boolean(),
   }),
 });
@@ -42,15 +38,15 @@ type SchemaT = z.infer<typeof schema>;
 const init: SchemaT = {
   company_name: '',
   nip: '',
-  email: '',
   website: '',
+  description: '',
   projects_per_year: '',
-  city: '',
-  project_type: '',
-  completion_date: '',
   project_stage: '',
-  project_area: '',
-  project_budget: '',
+  notifications: {
+    email: false,
+    sms: false,
+    push: false,
+  },
 };
 
 export default function FormExample() {
@@ -62,6 +58,7 @@ export default function FormExample() {
 
 
   function onSubmit() {
+
     form.reset();
   }
 
@@ -71,10 +68,81 @@ export default function FormExample() {
         {/* It is ok to use normal form element with fields  */}
         <form action=''>
           {/* Field Group is adding space between fields*/}
-
           <FieldGroup>
-            {/* 💥INPUT*/}
-            {/* Controller is from React Hook Form to connect everything properly */}
+
+            {/*  Field set is allowing to create a subset of different elements inside one thing
+             return */}
+            <FieldSet>
+                <FieldContent>
+                  <FieldLegend>Notifications</FieldLegend>
+                  <FieldDescription>Select how you want to receive notifications</FieldDescription>
+                </FieldContent>
+
+
+              {/* 💥Checkboxes */}
+                {/* Again for styling reasons we can add fieldGroup and if we add data-slot
+                 attribute it will make elements inside closer to each other */}
+                <FieldGroup data-slot={'checkbox-group'} >
+                  <Controller
+                    control={form.control}
+                    name={`notifications.email`}
+                    render={({ field: {value, onChange, ...field}, fieldState }) => {
+                      return (
+                        /*We need to move label under checkbox and add horizontal to make it
+                         styling work*/
+                        <Field data-invalid={fieldState.invalid } orientation={'horizontal'}>
+                          <Checkbox {...field} checked={value} onCheckedChange={onChange} id={field.name} aria-invalid={fieldState.invalid} />
+                          <FieldLabel htmlFor={field.name}>Email </FieldLabel>
+
+                          {fieldState.error &&
+                            // we can add fieldContent to make error show beneath instead of
+                            // next to the checkbox
+                            <FieldContent>
+                              <FieldError errors={[{ message: 'Error message' }]} />
+                            </FieldContent>
+                          }
+                        </Field>
+                      );
+                    }}
+                  />
+                  <Controller
+                    control={form.control}
+                    name={`notifications.sms`}
+                    render={({ field: {value, onChange, ...field}, fieldState }) => {
+                      return (
+                        <Field data-invalid={fieldState.invalid } orientation={'horizontal'}>
+                          <Checkbox {...field} checked={value} onCheckedChange={onChange} id={field.name} aria-invalid={fieldState.invalid} />
+                          <FieldLabel htmlFor={field.name}>Sms </FieldLabel>
+                          {fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+                        </Field>
+                      );
+                    }}
+                  />
+                  <Controller
+                    control={form.control}
+                    name={`notifications.push`}
+                    render={({ field: {value, onChange, ...field}, fieldState }) => {
+                      return (
+                          <Field data-invalid={fieldState.invalid } orientation={'horizontal'}>
+                          <Checkbox {...field} checked={value} onCheckedChange={onChange} id={field.name} aria-invalid={fieldState.invalid} />
+                          <FieldLabel htmlFor={field.name}>push </FieldLabel>
+                          {fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+                        </Field>
+                      );
+                    }}
+                  />
+
+
+                </FieldGroup>
+
+
+              </FieldSet>
+
+            {/*}}*/}
+            {/*/>*/}
+
+
+
             <Controller
               // we start by adding control - after that we are getting type safety
               control={form.control}
@@ -103,11 +171,11 @@ export default function FormExample() {
             {/* 💥TEXT AREA */}
             <Controller
               control={form.control}
-              name={`city`}
+              name={`description`}
               render={({ field, fieldState }) => {
                 return (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={field.name}>Text Area</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Text Area </FieldLabel>
                     <Textarea {...field} id={field.name} aria-invalid={fieldState.invalid} />
                     {fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
                   </Field>
@@ -144,6 +212,7 @@ export default function FormExample() {
                 );
               }}
             />
+
             {/* NIP - SPECIAL CASE */}
             <Controller
               control={form.control}
@@ -151,11 +220,7 @@ export default function FormExample() {
               render={({ field, fieldState }) => {
                 return (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldContent>
-                      <FieldDescription>Opis pola </FieldDescription>
-
                       <FieldLabel htmlFor={field.name}>nip</FieldLabel>
-                    </FieldContent>
                     <Input
                       {...field}
                       type='text'
@@ -178,9 +243,10 @@ export default function FormExample() {
                 );
               }}
             />
+            <Button>submit</Button>
+
           </FieldGroup>
 
-          <Button>submit</Button>
         </form>
       </div>
       <div></div>
