@@ -89,7 +89,7 @@ export default function FormRawWithComments() {
 	function onSubmit(data: SchemaT) {
 		console.log({ data }, 'data');
 		console.log(`🚀: `, form.formState);
-		// form.reset();
+		form.reset();
 	}
 
 	console.log(form.formState.errors);
@@ -120,7 +120,7 @@ export default function FormRawWithComments() {
 									{/* aria-invalid gives us styling of the whole field
 									 like red highlight if field is invalid */}
 									<Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-									{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+									{fieldState.error && <FieldError errors={[fieldState.error]} />}
 								</Field>
 							);
 						}}
@@ -159,7 +159,7 @@ export default function FormRawWithComments() {
 												// we can add fieldContent to make error show beneath instead of
 												// next to the checkbox
 												<FieldContent>
-													<FieldError errors={[{ message: 'Error message' }]} />
+													{fieldState.error && <FieldError errors={[fieldState.error]} />}
 												</FieldContent>
 											)}
 										</Field>
@@ -180,7 +180,7 @@ export default function FormRawWithComments() {
 												aria-invalid={fieldState.invalid}
 											/>
 											<FieldLabel htmlFor={field.name}>Sms </FieldLabel>
-											{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+											{fieldState.error && <FieldError errors={[fieldState.error]} />}
 										</Field>
 									);
 								}}
@@ -199,7 +199,7 @@ export default function FormRawWithComments() {
 												aria-invalid={fieldState.invalid}
 											/>
 											<FieldLabel htmlFor={field.name}>push </FieldLabel>
-											{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+											{fieldState.error && <FieldError errors={[fieldState.error]} />}
 										</Field>
 									);
 								}}
@@ -225,7 +225,7 @@ export default function FormRawWithComments() {
 									{/* aria-invalid gives us styling of the whole field
                      like red highlight if field is invalid */}
 									<Input {...field} id={field.name} aria-invalid={fieldState.invalid} />
-									{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+									{fieldState.error && <FieldError errors={[fieldState.error]} />}
 								</Field>
 							);
 						}}
@@ -240,7 +240,7 @@ export default function FormRawWithComments() {
 								<Field data-invalid={fieldState.invalid}>
 									<FieldLabel htmlFor={field.name}>Text Area </FieldLabel>
 									<Textarea {...field} id={field.name} aria-invalid={fieldState.invalid} />
-									{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+									{fieldState.error && <FieldError errors={[fieldState.error]} />}
 								</Field>
 							);
 						}}
@@ -274,7 +274,7 @@ export default function FormRawWithComments() {
 											<SelectItem value='realization'>realizacja</SelectItem>
 										</SelectContent>
 									</Select>
-									{fieldState.error && <FieldError errors={[{ message: 'message' }]} />}
+									{fieldState.error && <FieldError errors={[fieldState.error]} />}
 								</Field>
 							);
 						}}
@@ -305,7 +305,7 @@ export default function FormRawWithComments() {
 											}
 										}}
 									/>
-									{fieldState.error && <FieldError errors={[{ message: 'Error message' }]} />}
+									{fieldState.error && <FieldError errors={[fieldState.error]} />}
 								</Field>
 							);
 						}}
@@ -370,7 +370,9 @@ export default function FormRawWithComments() {
 						})}
 					</FieldGroup>
 				</FieldGroup>
-				<Button type={`submit`}>submit</Button>
+				<Button className={`mt-4`} type={`submit`}>
+					submit
+				</Button>
 			</form>
 		</>
 	);

@@ -7,19 +7,15 @@ import {
 	FieldDescription,
 	FieldError,
 	FieldGroup,
-	FieldLabel,
 	FieldLegend,
 	FieldSeparator,
 	FieldSet,
 } from '@/components/ui/field';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
+import { SelectItem } from '@/components/ui/select';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Checkbox } from '@/components/ui/checkbox';
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from '@/components/ui/input-group';
 import { X } from 'lucide-react';
 import { FormCheckbox, FormInput, FormSelect, FormTextarea } from '@/components/react-_hook_form/AbstractedComponents';
@@ -28,11 +24,6 @@ const schema = z.object({
 	company_name: z.string().min(1),
 	description: z.string().min(1),
 	// accept both string and number, but transform to string
-	nip: z
-		.string()
-		.length(10, { message: 'NIP musi mieć dokładnie 10 cyfr' })
-		.regex(/^[0-9]+$/, { message: 'Tylko cyfry są dozwolone' }),
-	// optional field, if filled only with default empty string it will convert to undefined
 	website: z
 		.string()
 		.optional()
@@ -57,7 +48,6 @@ type SchemaT = z.infer<typeof schema>;
 
 const init: SchemaT = {
 	company_name: '',
-	nip: '',
 	website: '',
 	description: '',
 	project_stage: '',
@@ -134,50 +124,48 @@ export default function FormHookFormWithAbstractions() {
 								)}
 							</FieldContent>
 							<Button type={`button`} onClick={() => addUser({ email: '' })}>
-								Add{' '}
+								Add
 							</Button>
 						</div>
 					</FieldSet>
 
 					<FieldGroup>
-						{users.map((user, index) => {
-							return (
-								<Controller
-									key={index}
-									control={form.control}
-									name={`users.${index}.email`}
-									render={({ field, fieldState }) => {
-										return (
-											<Field aria-invalid={fieldState.invalid}>
-												<InputGroup>
-													<InputGroupInput
-														type={'email'}
-														aria-invalid={fieldState.invalid}
-														{...field}
-														id={field.name}
-														aria-label={`User ${index + 1} email`}
-													/>
-													<InputGroupAddon align={`inline-end`}>
-														<InputGroupButton
-															aria-label={`Remove user ${index + 1} email`}
-															type={`button`}
-															onClick={() => removeUser(index)}
-														>
-															<X />
-														</InputGroupButton>
-													</InputGroupAddon>
-												</InputGroup>
-												{fieldState.error && <FieldError errors={[fieldState.error]} />}
-											</Field>
-										);
-									}}
-								/>
-							);
-						})}
+						{users.map((user, index) => (
+							<Controller
+								key={index}
+								control={form.control}
+								name={`users.${index}.email`}
+								render={({ field, fieldState }) => (
+									<Field aria-invalid={fieldState.invalid}>
+										<InputGroup>
+											<InputGroupInput
+												type={'email'}
+												aria-invalid={fieldState.invalid}
+												{...field}
+												id={field.name}
+												aria-label={`User ${index + 1} email`}
+											/>
+											<InputGroupAddon align={`inline-end`}>
+												<InputGroupButton
+													aria-label={`Remove user ${index + 1} email`}
+													type={`button`}
+													onClick={() => removeUser(index)}
+												>
+													<X />
+												</InputGroupButton>
+											</InputGroupAddon>
+										</InputGroup>
+										{fieldState.error && <FieldError errors={[fieldState.error]} />}
+									</Field>
+								)}
+							/>
+						))}
 					</FieldGroup>
 				</FieldGroup>
 
-				<Button type={'submit'}>submit</Button>
+				<Button className={`my-4`} type={'submit'}>
+					submit
+				</Button>
 			</form>
 		</>
 	);
